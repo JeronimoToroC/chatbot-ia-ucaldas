@@ -1,0 +1,32 @@
+{
+  "project": {
+    "name": "ChatBot IA Universidad de Caldas",
+    "version": "1.0.0",
+    "start_date": "2025-10-15",
+    "delivery_date": "2025-11-22"
+  },
+  "llm": {
+    "primary_model": "gpt-3.5-turbo",
+    "temperature": 0.3,
+    "max_tokens": 500,
+    "embedding_model": "text-embedding-3-small",
+    "embedding_dimensions": 1536
+  },
+  "pinecone": {
+    "index_name": "chatbot-ia-ucaldas",
+    "metric": "cosine",
+    "dimensions": 1536
+  },
+  "rag": {
+    "chunk_size": 2400,
+    "chunk_overlap": 400,
+    "top_k": 5
+  },
+  "evaluation": {
+    "gold_questions_count": 60,
+    "target_score": 0.70,
+    "max_hallucination_rate": 0.10,
+    "min_citation_rate": 0.85,
+    "target_ifa": 0.75
+  }
+}

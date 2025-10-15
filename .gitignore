@@ -1,5 +1,13 @@
-# Environment variables
+# Variables de entorno
 .env
+
+# Logs
+logs/*.log
+logs/*.csv
+!logs/.gitkeep
+
+# Resultados temporales
+results/*.tmp
 
 # Python
 __pycache__/
@@ -7,18 +15,10 @@ __pycache__/
 *.class
 *.so
 .Python
-env/
 venv/
-ENV/
-build/
-dist/
-*.egg-info/
+env/
 
-# Logs
-logs/
-*.log
-
-# IDE
+# IDEs
 .vscode/
 .idea/
 *.swp
@@ -28,12 +28,5 @@ logs/
 .DS_Store
 Thumbs.db
 
-# N8N credentials (si se exportan)
-n8n_workflows/*credentials*.json
-
-# Datos sensibles
-data/temp/
-results/temp/
-
-# Video demos grandes (usar Git LFS si es necesario)
-demo/*.mp4
+# N8N
+.n8n/
