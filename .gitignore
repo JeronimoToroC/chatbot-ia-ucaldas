@@ -1,0 +1,39 @@
+# Environment variables
+.env
+
+# Python
+__pycache__/
+*.py[cod]
+*.class
+*.so
+.Python
+env/
+venv/
+ENV/
+build/
+dist/
+*.egg-info/
+
+# Logs
+logs/
+*.log
+
+# IDE
+.vscode/
+.idea/
+*.swp
+*.swo
+
+# OS
+.DS_Store
+Thumbs.db
+
+# N8N credentials (si se exportan)
+n8n_workflows/*credentials*.json
+
+# Datos sensibles
+data/temp/
+results/temp/
+
+# Video demos grandes (usar Git LFS si es necesario)
+demo/*.mp4
