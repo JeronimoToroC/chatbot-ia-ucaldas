@@ -1,0 +1,207 @@
+{
+  "name": "02_Consulta_RAG",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "consulta-rag",
+        "responseMode": "responseNode",
+        "options": {
+          "binaryPropertyName": "data"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -272,
+        48
+      ],
+      "id": "1d9be809-0d39-4ed7-9c2c-91cc8016b9f9",
+      "name": "Webhook",
+      "webhookId": "87354670-c1a7-4216-9291-034ddc93f80b"
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Busca información relevante en la base de conocimientos sobre Inteligencia Artificial de la Universidad de Caldas. Use esta herramienta para responder preguntas sobre IA, machine learning, ética, regulación y aplicaciones.",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "chatbot-ia-ucaldas",
+          "mode": "list",
+          "cachedResultName": "chatbot-ia-ucaldas"
+        },
+        "topK": 5,
+        "options": {
+          "pineconeNamespace": ""
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        256,
+        224
+      ],
+      "id": "ba18a279-19fd-4519-8102-b75be2471a21",
+      "name": "Pinecone Vector Store",
+      "credentials": {
+        "pineconeApi": {
+          "id": "S7KkYW6MsGysT6mc",
+          "name": "Pinecone_Proyecto_IA"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {
+          "dimensions": 1536
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        192,
+        400
+      ],
+      "id": "fba35dc5-006f-4ae2-a5a9-533e69625f9e",
+      "name": "Embeddings OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "duNr6yuyMS5tLzZU",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "=={{ $json.body.pregunta }}",
+        "options": {
+          "systemMessage": "Eres un asistente experto en Inteligencia Artificial de la Universidad de Caldas.\n\nINSTRUCCIONES OBLIGATORIAS:\n\n1. Responde EXCLUSIVAMENTE con información del contexto recuperado de la base de conocimientos\n2. Si el contexto no contiene información suficiente, responde: \"No tengo información suficiente en mi base de conocimientos para responder esta pregunta con precisión.\"\n3. SIEMPRE incluye citas al final usando el formato: [Fuente: nombre_documento.pdf]\n4. NO inventes información bajo ninguna circunstancia\n5. Sé académico, claro y conciso (máximo 400 palabras)\n6. Si recuperas múltiples documentos, cita todos los relevantes\n\nFORMATO DE RESPUESTA OBLIGATORIO:\n- Párrafo(s) con la respuesta\n- Línea en blanco\n- **Referencias:**\n- [Fuente: documento1.pdf]\n- [Fuente: documento2.pdf]"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        0,
+        48
+      ],
+      "id": "98c2d1aa-0c5d-4311-a4b2-d8f88c094fee",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "model": {
+          "__rl": true,
+          "value": "gpt-3.5-turbo",
+          "mode": "list",
+          "cachedResultName": "gpt-3.5-turbo"
+        },
+        "builtInTools": {},
+        "options": {
+          "maxTokens": 500,
+          "temperature": 0.3
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatOpenAi",
+      "typeVersion": 1.3,
+      "position": [
+        -144,
+        256
+      ],
+      "id": "59f80036-58ec-4fea-9b7a-b95459a27e84",
+      "name": "OpenAI Chat Model",
+      "credentials": {
+        "openAiApi": {
+          "id": "duNr6yuyMS5tLzZU",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{\n  {\n    \"success\": true,\n    \"respuesta\": $json.output || \"No se obtuvo respuesta\",\n    \"fuentes\": [],\n    \"metadata\": {\n      \"num_chunks_recuperados\": 0,\n      \"modelo_usado\": \"gpt-3.5-turbo\",\n      \"tokens_consumidos\": 0,\n      \"latencia_ms\": 0\n    },\n    \"no_tiene_informacion\": false,\n    \"timestamp\": new Date().toISOString()\n  }\n}}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        352,
+        48
+      ],
+      "id": "73e2c118-c1c8-482c-a746-aaefe49dfb53",
+      "name": "Respond to Webhook"
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Embeddings OpenAI": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pinecone Vector Store": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "OpenAI Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": false,
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "versionId": "041c7d4b-cb7f-4583-983c-1a222a296d78",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "312c41da1f64707c182f2cc912cfdf1e272c88b2a6ff833031fa4e94d238c185"
+  },
+  "id": "1gXx4TllDJNxfkiK",
+  "tags": []
+}
