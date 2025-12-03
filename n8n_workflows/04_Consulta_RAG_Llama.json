@@ -1,0 +1,225 @@
+{
+  "name": "04_Consulta_RAG_Llama",
+  "nodes": [
+    {
+      "parameters": {
+        "httpMethod": "POST",
+        "path": "consulta-rag-llama",
+        "responseMode": "responseNode",
+        "options": {
+          "binaryPropertyName": "data"
+        }
+      },
+      "type": "n8n-nodes-base.webhook",
+      "typeVersion": 2.1,
+      "position": [
+        -160,
+        48
+      ],
+      "id": "91f4e802-83cb-4eaa-aca1-a9e2f962cee1",
+      "name": "Webhook",
+      "webhookId": "315ca305-d33b-4989-a7f4-4bd23ef14cb5"
+    },
+    {
+      "parameters": {
+        "mode": "retrieve-as-tool",
+        "toolDescription": "Busca información relevante en la base de conocimientos sobre Inteligencia Artificial de la Universidad de Caldas. Use esta herramienta para responder preguntas sobre IA, machine learning, ética, regulación y aplicaciones.",
+        "pineconeIndex": {
+          "__rl": true,
+          "value": "chatbot-ia-ucaldas",
+          "mode": "list",
+          "cachedResultName": "chatbot-ia-ucaldas"
+        },
+        "topK": 5,
+        "options": {
+          "pineconeNamespace": ""
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.vectorStorePinecone",
+      "typeVersion": 1.3,
+      "position": [
+        464,
+        224
+      ],
+      "id": "b7d5476a-a5e8-4121-86f4-289352806e51",
+      "name": "Pinecone Vector Store",
+      "credentials": {
+        "pineconeApi": {
+          "id": "S7KkYW6MsGysT6mc",
+          "name": "Pinecone_Proyecto_IA"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "options": {
+          "dimensions": 1536
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.embeddingsOpenAi",
+      "typeVersion": 1.2,
+      "position": [
+        400,
+        400
+      ],
+      "id": "f8b5528a-62c3-44cb-9600-6117d01ec753",
+      "name": "Embeddings OpenAI",
+      "credentials": {
+        "openAiApi": {
+          "id": "duNr6yuyMS5tLzZU",
+          "name": "OpenAi account"
+        }
+      }
+    },
+    {
+      "parameters": {
+        "promptType": "define",
+        "text": "={{ $json.body.pregunta || $json.pregunta }}",
+        "options": {
+          "systemMessage": "=Eres un asistente experto en Inteligencia Artificial de la Universidad de Caldas.\n\n{{ $json.body.modo === \"breve\" ? \"MODO DE RESPUESTA: BREVE\\n\\nINSTRUCCIONES ESPECÍFICAS PARA MODO BREVE:\\n- Responde en MÁXIMO 2-3 frases (50-80 palabras total)\\n- Ve directo al punto, sin introducciones\\n- Usa lenguaje conciso y directo\\n- Si hay múltiples aspectos, menciona solo el más importante\\n- Las citas van al final, en UNA sola línea\\n\\nFORMATO DE RESPUESTA BREVE:\\n[Respuesta directa en 2-3 frases]. [Fuente: documento.pdf]\\n\\nEJEMPLO BREVE:\\nLa IA es un campo de la informática que desarrolla sistemas capaces de realizar tareas que requieren inteligencia humana, como aprendizaje y razonamiento. [Fuente: UNESCO_AI_Ethics.pdf]\" : \"MODO DE RESPUESTA: EXTENDIDO\\n\\nINSTRUCCIONES ESPECÍFICAS PARA MODO EXTENDIDO:\\n- Respuesta completa y detallada (máximo 400 palabras)\\n- Desarrolla el tema con profundidad\\n- Incluye contexto, ejemplos y detalles relevantes\\n- Explica conceptos relacionados cuando sea apropiado\\n- Estructura clara con párrafos separados\\n\\nFORMATO DE RESPUESTA EXTENDIDA:\\n[Párrafo 1: Definición o respuesta principal]\\n\\n[Párrafo 2: Detalles, contexto o ejemplos]\\n\\n[Párrafo 3 (opcional): Implicaciones o información adicional]\\n\\n**Referencias:**\\n- [Fuente: documento1.pdf]\\n- [Fuente: documento2.pdf]\" }}\n\nINSTRUCCIONES CRÍTICAS (SIEMPRE APLICABLES):\n\n1. ANÁLISIS DEL CONTEXTO:\n   - Verifica si el contexto recuperado tiene información relevante para la pregunta\n   - El contexto es relevante si menciona conceptos, entidades o temas directamente relacionados\n\n2. ESTRATEGIA DE RESPUESTA SEGÚN TIPO DE PREGUNTA:\n\n   A) PREGUNTA ESPECÍFICA CON CONTEXTO DIRECTO:\n   - Si el contexto contiene información directa, responde normalmente con citas\n   \n   B) PREGUNTA GENERAL CON CONTEXTO PARCIAL/RELACIONADO:\n   - Si la pregunta es amplia pero tienes info específica\n   - Responde: \"Basándome en mi base de conocimientos, tengo información específica sobre [tema específico encontrado]...\"\n   \n   C) PREGUNTA SIN CONTEXTO RELACIONADO:\n   - Responde EXACTAMENTE: \"No tengo información suficiente en mi base de conocimientos para responder esta pregunta con precisión.\"\n   - NO intentes responder con conocimiento general\n   \n   D) PREGUNTA FUERA DE ALCANCE:\n   - Responde: \"Como asistente especializado en Inteligencia Artificial de la Universidad de Caldas, mi función es responder preguntas sobre IA, machine learning, la universidad y temas académicos relacionados. No puedo responder preguntas sobre [tema preguntado].\"\n\n3. REGLAS DE CITACIÓN:\n   - SIEMPRE incluye citas cuando uses información del contexto\n   - Formato obligatorio: [Fuente: nombre_documento.pdf]\n   - Si usas información de múltiples documentos, cita todos\n\n4. PROHIBICIONES ABSOLUTAS:\n   - NO inventes información\n   - NO uses conocimiento general si no está en el contexto\n   - NO respondas preguntas sin contexto relevante"
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.agent",
+      "typeVersion": 3,
+      "position": [
+        208,
+        48
+      ],
+      "id": "e4155c33-5d0b-4155-acf7-9306fa152f8c",
+      "name": "AI Agent"
+    },
+    {
+      "parameters": {
+        "respondWith": "json",
+        "responseBody": "={{ $json }}",
+        "options": {}
+      },
+      "type": "n8n-nodes-base.respondToWebhook",
+      "typeVersion": 1.4,
+      "position": [
+        768,
+        48
+      ],
+      "id": "d3047221-5bff-43b9-ad0c-cf2b83623829",
+      "name": "Respond to Webhook"
+    },
+    {
+      "parameters": {
+        "jsCode": "// Obtener el output del AI Agent\nconst aiAgentOutput = $input.first().json;\nconst respuestaTexto = aiAgentOutput.output || \"\";\n\n// IMPORTANTE: El AI Agent no expone directamente los chunks de Pinecone\n// Vamos a extraer las fuentes mencionadas en el texto usando regex\n\n// Regex para extraer citas del formato: [Fuente: documento.pdf]\nconst citasRegex = /\\[Fuente:\\s*([^\\]]+)\\]/g;\nconst fuentesExtraidas = new Set();\nlet match;\n\nwhile ((match = citasRegex.exec(respuestaTexto)) !== null) {\n  fuentesExtraidas.add(match[1].trim());\n}\n\n// Convertir Set a Array de objetos de fuentes\nconst fuentesArray = Array.from(fuentesExtraidas).map((docNombre, index) => ({\n  doc_nombre: docNombre,\n  doc_index: index + 1,\n  chunk_index: 0, // No tenemos acceso al chunk_index real desde el AI Agent\n  chunk_text: \"\", // No tenemos acceso al texto del chunk\n  score: 0 // No tenemos acceso al score de similitud\n}));\n\n// Detectar si no tiene información\nconst noTieneInformacion = \n  respuestaTexto.toLowerCase().includes(\"no tengo información\") ||\n  respuestaTexto.toLowerCase().includes(\"no puedo responder\") ||\n  respuestaTexto.toLowerCase().includes(\"no dispongo\") ||\n  respuestaTexto.toLowerCase().includes(\"información suficiente\") ||\n  fuentesArray.length === 0;\n\n// Calcular timestamp de inicio (aproximado)\nconst timestampActual = new Date().toISOString();\n\n// Construir respuesta en formato esperado por el frontend\nconst respuestaFormateada = {\n  success: true,\n  respuesta: respuestaTexto,\n  fuentes: fuentesArray,\n  metadata: {\n    num_chunks_recuperados: fuentesArray.length,\n    modelo_usado: \"gpt-3.5-turbo\",\n    tokens_consumidos: 0, // El AI Agent no expone esto\n    latencia_ms: 0 // Calculamos después si es necesario\n  },\n  no_tiene_informacion: noTieneInformacion,\n  timestamp: timestampActual\n};\n\nreturn [{ json: respuestaFormateada }];"
+      },
+      "type": "n8n-nodes-base.code",
+      "typeVersion": 2,
+      "position": [
+        560,
+        48
+      ],
+      "id": "f767f6aa-b7a5-46e3-a3f1-dc64f179fb09",
+      "name": "Extraer_Fuentes_Y_Formatear"
+    },
+    {
+      "parameters": {
+        "model": "openai/gpt-oss-safeguard-20b",
+        "options": {
+          "maxTokensToSample": 500,
+          "temperature": 0.3
+        }
+      },
+      "type": "@n8n/n8n-nodes-langchain.lmChatGroq",
+      "typeVersion": 1,
+      "position": [
+        80,
+        256
+      ],
+      "id": "fad5256d-4f04-43bf-9fb9-95f38a28c635",
+      "name": "Groq Chat Model",
+      "credentials": {
+        "groqApi": {
+          "id": "411CtdtFmNSr0dl0",
+          "name": "GroqAPI"
+        }
+      }
+    }
+  ],
+  "pinData": {},
+  "connections": {
+    "Embeddings OpenAI": {
+      "ai_embedding": [
+        [
+          {
+            "node": "Pinecone Vector Store",
+            "type": "ai_embedding",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Webhook": {
+      "main": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Pinecone Vector Store": {
+      "ai_tool": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_tool",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "AI Agent": {
+      "main": [
+        [
+          {
+            "node": "Extraer_Fuentes_Y_Formatear",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Extraer_Fuentes_Y_Formatear": {
+      "main": [
+        [
+          {
+            "node": "Respond to Webhook",
+            "type": "main",
+            "index": 0
+          }
+        ]
+      ]
+    },
+    "Groq Chat Model": {
+      "ai_languageModel": [
+        [
+          {
+            "node": "AI Agent",
+            "type": "ai_languageModel",
+            "index": 0
+          }
+        ]
+      ]
+    }
+  },
+  "active": true,
+  "settings": {
+    "executionOrder": "v1",
+    "callerPolicy": "workflowsFromSameOwner",
+    "availableInMCP": false
+  },
+  "versionId": "9597475c-7d9f-4561-ae0c-5a9d60ce7e6b",
+  "meta": {
+    "templateCredsSetupCompleted": true,
+    "instanceId": "312c41da1f64707c182f2cc912cfdf1e272c88b2a6ff833031fa4e94d238c185"
+  },
+  "id": "C8zuXMqoIf4J2Yrs",
+  "tags": []
+}
