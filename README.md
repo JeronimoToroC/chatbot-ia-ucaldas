@@ -17,7 +17,10 @@ Sistema de Consulta sobre Inteligencia Artificial con Arquitectura RAG
 - Jerónimo Toro C (Código: 20712) - Infraestructura, MLOps y Evaluación
 - Juan Pablo Valencia C (Código: 29169) - Contexto, Aplicación y RAG
 
-**Repositorio:** https://github.com/JeronimoToroC/chatbot-ia-ucaldas
+**Repositorios:** 
+
+- https://github.com/JeronimoToroC/chatbot-ia-ucaldas
+- https://github.com/JPValencia22/chatbot-ia-ucaldas-ui (Frontend)
 
 ---
 
